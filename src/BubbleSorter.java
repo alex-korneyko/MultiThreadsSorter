@@ -4,7 +4,7 @@ import java.util.List;
 /**
  * Created by Alex Korneyko on 07.06.2016.
  */
-public class BubbleSorter<T extends Comparable> {
+public class BubbleSorter<T extends Comparable<T>> {
 
     public long sort(List<T> list, int threadsNumber) throws InterruptedException {
 

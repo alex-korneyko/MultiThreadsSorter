@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -17,10 +18,11 @@ public class Main {
 //            System.out.println("Threads: " + i + " sorting in " + time + "ms. List sorted: " + Utils.testSortedList(exampleList));
 //        }
 
-        exampleList = Utils.listIntsRndGenerator(60, 1, 20);
-        System.out.println(exampleList);
-        long time = integerInsertionSorter.sort(exampleList, 1);
-        System.out.println(exampleList);
+//        exampleList = Utils.listIntsRndGenerator(10, 1, 20);
+        exampleList = Arrays.asList(10, 9, 8, 7, 6, 4, 5, 3, 2, 1, 0);
+        if (exampleList.size() <= 60) System.out.println(exampleList);
+        long time = integerInsertionSorter.sort(exampleList, 4);
+        if (exampleList.size() <= 60) System.out.println(exampleList);
         System.out.println("Time: " + time + " Sorted: " + Utils.testSortedList(exampleList));
     }
 }
