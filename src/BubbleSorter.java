@@ -1,34 +1,53 @@
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Thread.*;
+
 /**
  * Created by Alex Korneyko on 07.06.2016.
  */
 public class BubbleSorter<T extends Comparable<T>> {
 
-    public long sort(List<T> list, int threadsNumber) throws InterruptedException {
+    public long sort(List<T> list, int threadsNumber, SortValidator<? super T> sortValidator) throws InterruptedException {
 
-        List<Thread> threads = new ArrayList<>();
+        List<BobbleSortThread> threads = new ArrayList<>();
 
-        long lastSortTime = System.currentTimeMillis();
+        long sortTime = System.currentTimeMillis();
+        boolean listChanged = true;
 
-        for (int i = 0; i < threadsNumber; i++) {
-            final Thread thread = new Thread(new SortThread(list));
-            threads.add(thread);
-            thread.start();
+        while (listChanged) {
+            while (threads.size() >= threadsNumber) {
+                threads.removeIf(t -> t.getState() == State.TERMINATED && t.listChanged);
+            }
+
+            threads.add(new BobbleSortThread(list));
+            threads.get(threads.size() - 1).start();
+            threads.get(threads.size() - 1).join();
+
+            for (BobbleSortThread thread : threads) {
+                if (thread.getState() == State.TERMINATED && !thread.listChanged) {
+                    listChanged = false;
+                }
+            }
         }
 
-        while (!Utils.allThreadsStopped(threads)) {
-            Thread.sleep(100);
-        }
+        sortTime = System.currentTimeMillis() - sortTime;
+        return sortValidator.isValid(list, true) ? sortTime : -1;
 
-        return System.currentTimeMillis() - lastSortTime;
     }
 
-    private void sortAlgorithm(List<T> list) {
-        boolean listChanged = true;
-        while (listChanged) {
-            listChanged = false;
+    class BobbleSortThread extends Thread {
+
+        List<T> list;
+        int position = 0;
+        volatile boolean listChanged = false;
+
+        public BobbleSortThread(List<T> list) {
+            this.list = list;
+        }
+
+        @Override
+        public void run() {
             for (int i = 1; i < list.size(); i++) {
                 if (list.get(i - 1).compareTo(list.get(i)) > 0) {
                     Utils.swapElements(list, i - 1, i);
@@ -38,17 +57,4 @@ public class BubbleSorter<T extends Comparable<T>> {
         }
     }
 
-
-    private class SortThread implements Runnable {
-
-        List<T> list;
-        public SortThread(List<T> list) {
-            this.list = list;
-        }
-
-        @Override
-        public void run() {
-            sortAlgorithm(list);
-        }
-    }
 }
